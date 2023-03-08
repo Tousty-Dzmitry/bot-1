@@ -1,8 +1,10 @@
 import random
 
 from aiogram import Bot, Dispatcher
+from aiogram.types import BotCommand
 from aiogram.filters import Command
 from aiogram.types import Message
+
 
 from config import token
 from game1 import answers
@@ -15,30 +17,35 @@ bot: Bot = Bot(token=API_TOKEN)
 dp: Dispatcher = Dispatcher()
 
 
-# Этот хэндлер будет срабатывать на команду "/start"
-@dp.message(Command(commands=["start"]))
+# Создаем асинхронную функцию
+async def set_main_menu(bot: Bot):
+
+    # Создаем список с командами и их описанием для кнопки menu
+    main_menu_commands = [
+        BotCommand(command='/help',
+                   description='Справка по работе бота'),
+        BotCommand(command='/game',
+                   description='игра'),
+        BotCommand(command='/prediction',
+                   description='предсказание')
+    ]
+
+    await bot.set_my_commands(main_menu_commands)
+
+
+@dp.message(Command(commands=["game"]))
 async def process_start_command(message: Message):
-    await message.answer('Привет!\nМеня зовут Эхо-бот!\nНапиши мне что-нибудь')
+    await message.answer('Задай вопрос, нажми /prediction , получи ответ')
 
-
-# Этот хэндлер будет срабатывать на команду "/help"
-@dp.message(Command(commands=['help']))
-async def process_help_command(message: Message):
-    await message.answer('Напиши мне что-нибудь и в ответ '
-                         'я пришлю тебе твое сообщение')
-
-
-@dp.message(Command(commands=['game']))
-async def process_help_command(message: Message):
+@dp.message(Command(commands=["prediction"]))
+async def process_start_command(message: Message):
     await message.answer(random.choice(answers))
 
 
-# Этот хэндлер будет срабатывать на любые ваши текстовые сообщения,
-# кроме команд "/start" и "/help"
-@dp.message()
-async def send_echo(message: Message):
-    await message.reply(text=message.text)
 
 
 if __name__ == '__main__':
+
+    dp.startup.register(set_main_menu)
+
     dp.run_polling(bot)
